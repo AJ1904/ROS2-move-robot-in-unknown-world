@@ -17,7 +17,7 @@ import xmltodict
 from geometry_msgs.msg import TransformStamped, Quaternion, Vector3
 import numpy as np
 from rclpy.qos import QoSProfile, DurabilityPolicy
-from project4b.disc_robot import load_disc_robot, disc_robot_urdf
+from project4c.disc_robot import load_disc_robot, disc_robot_urdf
 import yaml
 from nav_msgs.msg import OccupancyGrid
 from std_msgs.msg import Header
@@ -179,20 +179,35 @@ class SimulatorNode(Node):
 
             if str(row) == "#":
                 # found obstacle
-               self.current_map.append(int(100))
+            #    self.current_map.append(int(100))
                current_row.append(int(100))
 
                
             elif str(row) == ".":
                 # found free space
-                self.current_map.append(int(0))
+                # self.current_map.append(int(0))
                 current_row.append(int(0))
             elif str(row) == "\n":
                 # end of line
                 current_height += 1
                 first_row = False
+                
+
+                # current_row.reverse()
+
                 self.two_d_map.append(current_row)
                 current_row = []
+
+
+        # The map would be inverted before this point so this flips it
+        self.two_d_map.reverse()
+
+
+        for row in self.two_d_map:
+            for col in row:
+                self.current_map.append(col)
+
+        
 
         self.map_msg.info.width = current_width
         self.map_msg.info.height = current_height
@@ -278,7 +293,7 @@ class SimulatorNode(Node):
                 # Append the minimum distance where an obstacle is found for this angle to the scan data
                 scan.ranges.append(measured_distance if (measured_distance > self.laser_range_min) and (measured_distance <= self.laser_range_max) else float('nan'))
                 
-        # self.get_logger().info(f"scan data: {scan}")
+        self.get_logger().info(f"scan data: {scan}")
 
         return scan
 
@@ -432,6 +447,8 @@ class SimulatorNode(Node):
                 return True
         
         return False
+
+
 
         
 def main(args=None):
